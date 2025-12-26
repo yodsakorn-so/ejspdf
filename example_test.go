@@ -2,25 +2,25 @@ package ejspdf_test
 
 import (
 	"context"
-	"os"
-	"time"
+	"fmt"
+	"log"
 
 	"github.com/yodsakorn-so/ejspdf"
 )
 
-func Example() {
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-	defer cancel()
+func ExampleRender() {
+	ctx := context.Background()
 
-	engine, _ := ejspdf.New()
-
-	pdfBytes, _ := engine.RenderEJSToPDF(
-		ctx,
-		"<h1>Hello <%= name %></h1>",
-		map[string]any{
+	pdfBytes, err := ejspdf.Render(ctx, ejspdf.Options{
+		Template: "<h1>Hello <%= name %></h1>",
+		Data: map[string]any{
 			"name": "World",
 		},
-	)
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	os.WriteFile("out.pdf", pdfBytes, 0644)
+	fmt.Println(len(pdfBytes) > 0)
+	// Output: true
 }

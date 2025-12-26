@@ -3,4 +3,4 @@ package assets
 import _ "embed"
 
 //go:embed ejs.js
-var EJS string
+var EJS []byte
