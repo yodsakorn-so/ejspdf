@@ -1,5 +1,9 @@
 # ejspdf
 
+![Go](https://github.com/yodsakorn-so/ejspdf/actions/workflows/go.yml/badge.svg)
+![License](https://img.shields.io/badge/license-MIT-blue.svg)
+![Go Version](https://img.shields.io/badge/go-1.22+-blue)
+
 Render **EJS templates to PDF** using **Go + Chrome (chromedp)**.
 
 `ejspdf` เหมาะสำหรับงานสร้างเอกสาร เช่น

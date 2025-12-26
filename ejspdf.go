@@ -1,3 +1,4 @@
+// Package ejspdf provides EJS to PDF rendering using Chrome.
 package ejspdf
 
 import (
@@ -11,6 +12,7 @@ type Engine struct {
 	rt *renderer.Runtime
 }
 
+// New creates a new EJS PDF rendering engine.
 func New() (*Engine, error) {
 	rt, err := renderer.New()
 	if err != nil {
@@ -19,6 +21,7 @@ func New() (*Engine, error) {
 	return &Engine{rt: rt}, nil
 }
 
+// RenderEJSToPDF renders an EJS template into a PDF document.
 func (e *Engine) RenderEJSToPDF(
 	ctx context.Context,
 	tpl string,
