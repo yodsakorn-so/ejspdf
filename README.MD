@@ -112,6 +112,34 @@ func main() {
 | `DisplayHeaderFooter` | `bool` | `false` | Enable header and footer printing. |
 | `HeaderTemplate` | `string` | `""` | HTML template for header. |
 | `FooterTemplate` | `string` | `""` | HTML template for footer. |
+| `Scale` | `float64` | `1.0` | Scale of the page rendering (zoom level). |
+| `PageRanges` | `string` | `""` | Paper ranges to print (e.g., "1-5, 8, 11-13"). Empty = all pages. |
+| `IgnoreBackground` | `bool` | `false` | If true, background graphics (colors/images) are not printed. |
+
+---
+
+## 🛠 Helper Functions
+
+### Render from File
+Instead of reading the file manually, use `RenderFromFile`:
+
+```go
+pdfBytes, err := ejspdf.RenderFromFile(ctx, "template.ejs", ejspdf.Options{
+    Data: data,
+    PageSize: "A4",
+})
+```
+
+### Embed Custom Fonts
+To use local fonts (like `.ttf`), use `FontFileToCSS` to generate the CSS `@font-face` string:
+
+```go
+fontCSS, _ := ejspdf.FontFileToCSS("fonts/THSarabunNew.ttf", "Sarabun")
+data := map[string]any{
+    "fontCSS": fontCSS,
+}
+// In EJS: <style><%- fontCSS %></style> ... font-family: 'Sarabun';
+```
 
 ---
 

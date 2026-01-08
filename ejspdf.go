@@ -62,6 +62,14 @@ type Options struct {
 	// WaitDelay is an optional additional delay after the selector is visible.
 	// Useful for ensuring fonts, images, or animations are fully loaded.
 	WaitDelay time.Duration
+
+	// Scale is the scale of the page rendering. Default is 1.0.
+	Scale float64
+	// PageRanges to print, e.g., "1-5, 8, 11-13". Empty means all pages.
+	PageRanges string
+	// IgnoreBackground disables printing of background graphics.
+	// Default is false (backgrounds are printed).
+	IgnoreBackground bool
 }
 
 // Render generates a PDF from an EJS template using the provided options and context.
@@ -95,6 +103,9 @@ func Render(ctx context.Context, opt Options) ([]byte, error) {
 		FooterTemplate:      opt.FooterTemplate,
 		WaitSelector:        opt.WaitSelector,
 		WaitDelay:           opt.WaitDelay,
+		Scale:               opt.Scale,
+		PageRanges:          opt.PageRanges,
+		IgnoreBackground:    opt.IgnoreBackground,
 	})
 
 	pdfBytes, err := chrome.FromHTML(ctx, html)
@@ -124,6 +135,53 @@ func ImageFileToBase64(path string) (string, error) {
 
 	encoded := base64.StdEncoding.EncodeToString(data)
 	return fmt.Sprintf("data:%s;base64,%s", mimeType, encoded), nil
+}
+
+// RenderFromFile reads the EJS template from a file and generates a PDF.
+// This is a helper wrapper around Render.
+func RenderFromFile(ctx context.Context, filePath string, opt Options) ([]byte, error) {
+	b, err := os.ReadFile(filePath)
+	if err != nil {
+		return nil, fmt.Errorf("ejspdf: failed to read template file: %w", err)
+	}
+	opt.Template = string(b)
+	return Render(ctx, opt)
+}
+
+// FontFileToCSS reads a font file and returns a CSS @font-face string.
+// Supported font formats: ttf, otf, woff, woff2.
+func FontFileToCSS(path string, fontFamily string) (string, error) {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return "", fmt.Errorf("ejspdf: failed to read font file: %w", err)
+	}
+
+	ext := filepath.Ext(path)
+	var mime, format string
+	switch ext {
+	case ".ttf":
+		mime = "font/ttf"
+		format = "truetype"
+	case ".otf":
+		mime = "font/otf"
+		format = "opentype"
+	case ".woff":
+		mime = "font/woff"
+		format = "woff"
+	case ".woff2":
+		mime = "font/woff2"
+		format = "woff2"
+	default:
+		return "", fmt.Errorf("ejspdf: unsupported font format: %s", ext)
+	}
+
+	encoded := base64.StdEncoding.EncodeToString(data)
+	return fmt.Sprintf(`@font-face {
+    font-family: '%s';
+    src: url('data:%s;charset=utf-8;base64,%s') format('%s');
+    font-weight: normal;
+    font-style: normal;
+}`, fontFamily, mime, encoded, format), nil
 }
 
 func defaultString(v, d string) string {

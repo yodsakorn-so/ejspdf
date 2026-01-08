@@ -34,6 +34,11 @@ type Options struct {
 	// Wait options
 	WaitSelector string
 	WaitDelay    time.Duration
+
+	// Print options
+	Scale            float64
+	PageRanges       string
+	IgnoreBackground bool
 }
 
 // Chrome represents a Chrome-based PDF renderer.
@@ -113,11 +118,17 @@ func (c *Chrome) FromHTML(ctx context.Context, html string) ([]byte, error) {
 		}
 	}
 
+	// Handle Scale default
+	scale := c.opt.Scale
+	if scale <= 0 {
+		scale = 1.0
+	}
+
 	// Print Action
 	actions = append(actions, chromedp.ActionFunc(func(ctx context.Context) error {
 		var err error
 		pdfBytes, _, err = page.PrintToPDF().
-			WithPrintBackground(true).
+			WithPrintBackground(!c.opt.IgnoreBackground).
 			WithLandscape(c.opt.Landscape).
 			WithPaperWidth(width).
 			WithPaperHeight(height).
@@ -128,6 +139,8 @@ func (c *Chrome) FromHTML(ctx context.Context, html string) ([]byte, error) {
 			WithDisplayHeaderFooter(c.opt.DisplayHeaderFooter).
 			WithHeaderTemplate(headerTpl).
 			WithFooterTemplate(footerTpl).
+			WithScale(scale).
+			WithPageRanges(c.opt.PageRanges).
 			Do(ctx)
 		return err
 	}))

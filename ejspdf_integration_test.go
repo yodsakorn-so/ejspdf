@@ -2,6 +2,7 @@ package ejspdf_test
 
 import (
 	"context"
+	"os"
 	"testing"
 	"time"
 
@@ -45,6 +46,27 @@ func TestRender_Integration(t *testing.T) {
 			t.Fatalf("Failed to render: %v", err)
 		}
 
+		if len(pdfBytes) == 0 {
+			t.Error("PDF output is empty")
+		}
+	})
+
+	t.Run("RenderFromFile with Options", func(t *testing.T) {
+		tmpFile := "test_temp.ejs"
+		err := os.WriteFile(tmpFile, []byte("<h1>File Test <%= name %></h1>"), 0644)
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer os.Remove(tmpFile)
+
+		pdfBytes, err := ejspdf.RenderFromFile(ctx, tmpFile, ejspdf.Options{
+			Data:             map[string]any{"name": "EJS"},
+			Scale:            0.5,
+			IgnoreBackground: true,
+		})
+		if err != nil {
+			t.Fatalf("Failed to render from file: %v", err)
+		}
 		if len(pdfBytes) == 0 {
 			t.Error("PDF output is empty")
 		}
