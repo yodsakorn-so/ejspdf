@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { font-family: sans-serif; margin: 0; padding: 0; }
+        .content { padding: 20px; }
+        .price { font-weight: bold; color: green; }
+    </style>
+</head>
+<body>
+    <!-- Test 1: Include File -->
+    <%- include('header.ejs') %>
+
+    <div class="content">
+        <h2>Welcome, <%= user %></h2>
+        <p>This is a test for <b>v0.4.0</b> features.</p>
+        
+        <h3>Product List (Calculated by Go)</h3>
+        <ul>
+            <% products.forEach(function(p) { %>
+                <li>
+                    <%= p.name %>: 
+                    <!-- Test 2: Call Go Function -->
+                    <span class="price"><%= formatMoney(p.price) %></span>
+                </li>
+            <% }); %>
+        </ul>
+    </div>
+</body>
+</html>
