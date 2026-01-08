@@ -74,7 +74,12 @@ func (c *Chrome) FromHTML(ctx context.Context, html string) ([]byte, error) {
 		chromeCtx, cancel = chromedp.NewContext(ctx)
 	} else {
 		// Create new allocator and session
-		allocOpts := chromedp.DefaultExecAllocatorOptions[:]
+		// Default options usually include Headless, DisableGPU, etc.
+		// We append NoSandbox to support running in CI/Docker environments.
+		allocOpts := append(chromedp.DefaultExecAllocatorOptions[:],
+			chromedp.NoSandbox,
+		)
+		
 		if c.opt.ChromePath != "" {
 			allocOpts = append(allocOpts, chromedp.ExecPath(c.opt.ChromePath))
 		}
