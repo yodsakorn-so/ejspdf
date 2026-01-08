@@ -143,6 +143,48 @@ data := map[string]any{
 
 ---
 
+## 🔥 Advanced Usage (New in v0.4.0)
+
+### 1. Template Includes
+You can split your template into multiple files (e.g., header, footer) and include them using `<%- include('path/to/file.ejs') %>`.
+
+**header.ejs**
+```html
+<h1>Company Header</h1>
+```
+
+**main.ejs**
+```html
+<%- include('header.ejs') %>
+<p>Content goes here...</p>
+```
+
+**Go Code:**
+```go
+// RenderFromFile automatically handles path resolution for includes
+ejspdf.RenderFromFile(ctx, "main.ejs", ...)
+```
+
+### 2. Go Functions in Templates
+Pass Go functions into the `Data` map to call them directly from your EJS template.
+
+**Go Code:**
+```go
+data := map[string]any{
+    "formatMoney": func(amount float64) string {
+        return fmt.Sprintf("$%.2f", amount)
+    },
+}
+```
+
+**EJS Template:**
+```html
+<p>Total: <%= formatMoney(123.456) %></p>
+<!-- Output: Total: $123.46 -->
+```
+
+---
+
 ## 💡 Tips
 
 ### Landscape Mode

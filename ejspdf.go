@@ -18,6 +18,9 @@ import (
 type Options struct {
 	// Template is the EJS template string.
 	Template string
+	// TemplatePath is the file path of the template (optional).
+	// Required for resolving relative paths in <%- include(...) %>.
+	TemplatePath string
 	// Data is the data map to pass to the template.
 	Data any
 
@@ -82,7 +85,7 @@ func Render(ctx context.Context, opt Options) ([]byte, error) {
 	// 1. Render EJS -> HTML
 	rt := renderer.New()
 
-	html, err := rt.RenderEJS(assets.EJS, opt.Template, opt.Data)
+	html, err := rt.RenderEJS(assets.EJS, opt.Template, opt.Data, opt.TemplatePath)
 	if err != nil {
 		return nil, fmt.Errorf("ejspdf: render ejs failed: %w", err)
 	}
@@ -145,6 +148,17 @@ func RenderFromFile(ctx context.Context, filePath string, opt Options) ([]byte, 
 		return nil, fmt.Errorf("ejspdf: failed to read template file: %w", err)
 	}
 	opt.Template = string(b)
+	
+	// Set TemplatePath if not provided, to enable relative includes
+	if opt.TemplatePath == "" {
+		absPath, err := filepath.Abs(filePath)
+		if err == nil {
+			opt.TemplatePath = absPath
+		} else {
+			opt.TemplatePath = filePath
+		}
+	}
+	
 	return Render(ctx, opt)
 }
 
