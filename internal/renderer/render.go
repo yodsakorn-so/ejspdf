@@ -17,11 +17,15 @@ func (r *Runtime) RenderEJS(ejsJS []byte, tpl string, data any, filename string)
 	// HACK: The bundled EJS has an empty mock for 'fs' at module ID 1.
 	// We replace it to redirect calls to our 'native-fs'.
 	jsCode := string(ejsJS)
-	jsCode = strings.Replace(jsCode,
-		"1:[function(require,module,exports){",
-		"1:[function(require,module,exports){module.exports=require('native-fs');",
-		1,
-	)
+	target := "1:[function(require,module,exports){"
+	replacement := "1:[function(require,module,exports){module.exports=require('native-fs');"
+	
+	if !strings.Contains(jsCode, target) {
+		// If exact match fails, try a more flexible search or report error
+		return "", fmt.Errorf("failed to patch EJS: target signature not found. This might be due to a version mismatch or unexpected file encoding")
+	}
+	
+	jsCode = strings.Replace(jsCode, target, replacement, 1)
 
 	_, err := r.vm.RunString(jsCode)
 	if err != nil {
