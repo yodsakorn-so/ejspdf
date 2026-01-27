@@ -94,8 +94,38 @@ func downloadAndUnzip(cacheDir string) (string, error) {
 	}
 	log.Println("Download and extraction complete.")
 
-	// Return the path to the executable
-	return getExecutablePath(cacheDir), nil
+	// Return the path to the executable and verify it exists
+	executablePath := getExecutablePath(cacheDir)
+	if _, err := os.Stat(executablePath); err != nil {
+		// Fallback: search for the executable if not found at expected location
+		var foundPath string
+		filepath.Walk(cacheDir, func(path string, info os.FileInfo, err error) error {
+			if err != nil {
+				return nil
+			}
+			name := strings.ToLower(info.Name())
+			if !info.IsDir() && (name == "chrome" || name == "chrome.exe" || name == "chromium") {
+				foundPath = path
+				return filepath.SkipDir
+			}
+			return nil
+		})
+
+		if foundPath != "" {
+			executablePath = foundPath
+		} else {
+			return "", fmt.Errorf("downloaded chromium but executable not found at %s (and search failed): %w", executablePath, err)
+		}
+	}
+
+	// Double check permissions on Linux/Darwin
+	if runtime.GOOS != "windows" {
+		if err := os.Chmod(executablePath, 0755); err != nil {
+			log.Printf("Warning: failed to set executable permissions on %s: %v\n", executablePath, err)
+		}
+	}
+
+	return executablePath, nil
 }
 
 // unzip extracts a zip archive to a destination directory.
@@ -177,6 +207,9 @@ func getDownloadURL() (string, error) {
 		}
 		return fmt.Sprintf("%s/Mac/%s/chrome-mac.zip", base, chromiumRevision), nil // Intel
 	case "linux":
+		if runtime.GOARCH != "amd64" {
+			return "", fmt.Errorf("automatic download is only supported for linux/amd64 (current: %s/%s). Please install chromium manually and set ChromePath or ensure it is in your PATH", runtime.GOOS, runtime.GOARCH)
+		}
 		return fmt.Sprintf("%s/Linux_x64/%s/chrome-linux.zip", base, chromiumRevision), nil
 	}
 	return "", fmt.Errorf("unsupported operating system: %s", runtime.GOOS)
