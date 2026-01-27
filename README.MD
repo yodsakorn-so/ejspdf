@@ -21,6 +21,7 @@ Ideal for generating:
 
 - ✅ **EJS Template Support**: Use standard EJS syntax (`<%= var %>`, `<% if %>`, etc.).
 - ✅ **Chrome-based Rendering**: What you see in the browser is exactly what you get in PDF.
+- ✅ **Automatic Browser Management**: Auto-detects installed Chrome/Chromium or downloads a portable version if none are found.
 - ✅ **Base64 Data URI**: Robust handling of special characters (e.g., `#` in CSS colors) and Thai language.
 - ✅ **Custom Page Sizes**: Support for standard (A4, A3) and custom dimensions (e.g., "80mm").
 - ✅ **Header & Footer**: Inject dynamic headers/footers with page numbers.
@@ -36,7 +37,7 @@ go get github.com/yodsakorn-so/ejspdf
 
 **Prerequisites:**
 - **Go** 1.22+
-- **Google Chrome** or **Chromium** installed on the host machine.
+- **Google Chrome** or **Chromium** (If not found on the host machine, `ejspdf` will automatically download a suitable version).
 
 ---
 
@@ -100,7 +101,7 @@ func main() {
 | :--- | :--- | :--- | :--- |
 | `Template` | `string` | **Required** | The EJS template string. |
 | `Data` | `any` | `nil` | Data object/map passed to the template. |
-| `ChromePath` | `string` | Auto | Custom path to Chrome executable. |
+| `ChromePath` | `string` | Auto | Custom path to Chrome. If empty, auto-detects or downloads automatically. |
 | `PageSize` | `string` | `"A4"` | `A4`, `A3`, `A5`, `Letter`, `Legal`, `Tabloid`. |
 | `Landscape` | `bool` | `false` | Set to `true` for landscape orientation. |
 | `PaperWidth` | `string` | `""` | Custom width (e.g., "80mm", "4in"). Overrides `PageSize`. |
