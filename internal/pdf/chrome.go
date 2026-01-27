@@ -8,6 +8,7 @@ import (
 
 	"github.com/chromedp/cdproto/page"
 	"github.com/chromedp/chromedp"
+	"github.com/yodsakorn-so/ejspdf/internal/browser"
 )
 
 // Options defines PDF rendering options.
@@ -80,9 +81,17 @@ func (c *Chrome) FromHTML(ctx context.Context, html string) ([]byte, error) {
 			chromedp.NoSandbox,
 		)
 		
-		if c.opt.ChromePath != "" {
-			allocOpts = append(allocOpts, chromedp.ExecPath(c.opt.ChromePath))
+		// Find or download browser
+		execPath := c.opt.ChromePath
+		if execPath == "" {
+			var err error
+			execPath, err = browser.FindOrDownload()
+			if err != nil {
+				return nil, fmt.Errorf("could not find or download chrome: %w", err)
+			}
 		}
+
+		allocOpts = append(allocOpts, chromedp.ExecPath(execPath))
 		allocCtx, allocCancel := chromedp.NewExecAllocator(ctx, allocOpts...)
 		defer allocCancel()
 
